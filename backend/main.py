@@ -1,41 +1,23 @@
-# backend/main.py
+"""
+json-to-model
+Author: Jorge Torres
+Description: Main FastAPI application entry point. Sets up middleware and includes all routes.
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Any
+from api.routes import router
 
 app = FastAPI()
 
-# Allow frontend requests
+# Setup CORS (allow all for dev; restrict in production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace with specific domain in prod
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Define request model
-class ConvertRequest(BaseModel):
-    json: Any
-    target: str
-
-@app.get("/")
-def read_root():
-    return {"message": "Hello, World!"}
-
-@app.post("/convert")
-def convert_stub(data: ConvertRequest):
-    # Simulate real response
-    if data.target == "pydantic":
-        return {
-            "generatedCode": "class MyModel(BaseModel):\n    field: str"
-        }
-    elif data.target == "typescript":
-        return {
-            "generatedCode": "interface MyModel {\n    field: string;\n}"
-        }
-    else:
-        return {
-            "error": "Invalid target format"
-        }
+# Mount routes from the api/routes module
+app.include_router(router)
