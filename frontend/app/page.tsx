@@ -114,31 +114,48 @@ export default function JsonToModelConverter() {
     return interfaces + mainInterface
   }
 
-  const handleConvert = () => {
-    setError("")
-    setGeneratedCode("")
+  const handleConvert = async () => {
+  setError("")
+  setGeneratedCode("")
 
-    if (!jsonInput.trim()) {
-      setError("Please enter some JSON to convert")
+  if (!jsonInput.trim()) {
+    setError("Please enter some JSON to convert")
+    return
+  }
+
+  try {
+    const parsedJson = JSON.parse(jsonInput)
+
+    if (typeof parsedJson !== "object" || parsedJson === null) {
+      setError("JSON must be an object")
       return
     }
 
-    try {
-      const parsedJson = JSON.parse(jsonInput)
+    // Send parsed JSON and output format to the backend
+    const response = await fetch("https://json-to-model.onrender.com/convert", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        json: parsedJson,
+        target: outputFormat, // 'pydantic' or 'typescript'
+      }),
+    })
 
-      if (typeof parsedJson !== "object" || parsedJson === null) {
-        setError("JSON must be an object")
-        return
-      }
+    const data = await response.json()
 
-      const code =
-        outputFormat === "pydantic" ? generatePydanticModel(parsedJson) : generateTypeScriptInterface(parsedJson)
-
-      setGeneratedCode(code)
-    } catch (err) {
-      setError("Invalid JSON format. Please check your input.")
+    if (response.ok && data.generatedCode) {
+      setGeneratedCode(data.generatedCode)
+    } else {
+      setError(data.error || "Backend did not return valid output")
     }
+
+  } catch (err) {
+    console.error("Conversion error:", err)
+    setError("Invalid JSON format or backend error.")
   }
+}
 
   const handleCopyToClipboard = async () => {
     if (!generatedCode) return
