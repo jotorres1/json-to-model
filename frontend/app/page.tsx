@@ -136,7 +136,7 @@ export default function JsonToModelConverter() {
     setIsLoading(true)
 
     // Simulate async operation with a delay
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
         // This is where the actual conversion happens
         // Send parsed JSON and output format to the backend
