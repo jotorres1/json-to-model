@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Copy, Moon, Sun, Zap } from "lucide-react"
+import { Copy, Loader2, Moon, Sun, Zap } from "lucide-react"
 import { useTheme } from "next-themes"
 import { toast } from "@/hooks/use-toast"
 
@@ -22,6 +22,7 @@ export default function JsonToModelConverter() {
   const [generatedCode, setGeneratedCode] = useState("")
   const [error, setError] = useState("")
   const { theme, setTheme } = useTheme()
+   const [isLoading, setIsLoading] = useState(false)
 
   const generatePydanticModel = (obj: JsonValue, className = "Model"): string => {
     const getType = (value: any): string => {
@@ -131,25 +132,39 @@ export default function JsonToModelConverter() {
       return
     }
 
-    // Send parsed JSON and output format to the backend
-    const response = await fetch("https://json-to-model.onrender.com/convert", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        json: parsedJson,
-        target: outputFormat, // 'pydantic' or 'typescript'
-      }),
-    })
+    // Set loading state to true
+    setIsLoading(true)
 
-    const data = await response.json()
+    // Simulate async operation with a delay
+    setTimeout(() => {
+      try {
+        // This is where the actual conversion happens
+        // Send parsed JSON and output format to the backend
+        const response = await fetch("https://json-to-model.onrender.com/convert", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            json: parsedJson,
+            target: outputFormat, // 'pydantic' or 'typescript'
+          }),
+        })
 
-    if (response.ok && data.generatedCode) {
-      setGeneratedCode(data.generatedCode)
-    } else {
-      setError(data.error || "Backend did not return valid output")
-    }
+        const data = await response.json()
+
+        if (response.ok && data.generatedCode) {
+          setGeneratedCode(data.generatedCode)
+        } else {
+          setError(data.error || "Backend did not return valid output")
+        }
+      } catch (err) {
+          setError("Error generating model. Please check your input.")
+        } finally {
+          // Reset loading state
+          setIsLoading(false)
+        }
+      }, 3000) // 3 second delay
 
   } catch (err) {
     console.error("Conversion error:", err)
@@ -221,8 +236,19 @@ export default function JsonToModelConverter() {
             </div>
             <div className="flex flex-col gap-2">
               <Label className="text-sm font-medium opacity-0">Action</Label>
-              <Button onClick={handleConvert} className="bg-blue-600 hover:bg-blue-700 text-white px-8">
-                Convert
+              <Button
+                onClick={handleConvert}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Converting...
+                  </>
+                ) : (
+                  "Convert"
+                )}
               </Button>
             </div>
           </div>
