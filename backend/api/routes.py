@@ -17,10 +17,3 @@ def convert_handler(payload: ConvertRequest):
     Passes JSON and target type to the converter service.
     """
     return Converter().convert(payload.json, payload.target)
-
-    from services.converter import Converter
-
-@app.post("/convert")
-def convert(request: ConvertRequest):
-    converter = Converter()
-    return converter.convert(request.json, request.target)
