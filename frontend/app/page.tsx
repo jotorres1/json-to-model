@@ -325,7 +325,8 @@ export default function JsonToModelConverter() {
                     }}
                   >
                     {generatedCode || "// Generated code will appear here..."}
-                  </SyntaxHighlighter>                  
+                  </SyntaxHighlighter>
+                </div>                 
               </CardContent>
             </Card>
           </div>
