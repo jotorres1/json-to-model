@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Copy, Loader2, Moon, Sun, Zap } from "lucide-react"
 import { useTheme } from "next-themes"
 import { toast } from "@/hooks/use-toast"
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+
 
 type OutputFormat = "pydantic" | "typescript"
 
@@ -308,6 +311,21 @@ export default function JsonToModelConverter() {
               </CardHeader>
               <CardContent>
                 <div className="relative">
+                  <SyntaxHighlighter
+                    language={outputFormat === "pydantic" ? "python" : "typescript"}
+                    style={oneDark}
+                    wrapLongLines
+                    customStyle={{
+                      minHeight: "400px",
+                      fontSize: "0.875rem",
+                      borderRadius: "0.5rem",
+                      backgroundColor: "transparent",
+                      padding: "1rem",
+                    }}
+                  >
+                    {generatedCode || "// Generated code will appear here..."}
+                  </SyntaxHighlighter>
+
                   <Textarea
                     value={generatedCode}
                     readOnly
