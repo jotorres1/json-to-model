@@ -317,7 +317,8 @@ export default function JsonToModelConverter() {
                     wrapLongLines={true}
                     customStyle={{
                       borderRadius: '0.5rem',
-                      background: 'transparent',
+                      backgroundColor: 'transparent',
+                      background: 'none',
                       padding: '1rem',
                       fontSize: '0.875rem',
                       maxHeight: '400px',
