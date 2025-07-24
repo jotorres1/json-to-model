@@ -325,15 +325,7 @@ export default function JsonToModelConverter() {
                     }}
                   >
                     {generatedCode || "// Generated code will appear here..."}
-                  </SyntaxHighlighter>
-
-                  {/* <Textarea
-                    value={generatedCode}
-                    readOnly
-                    placeholder="Generated code will appear here..."
-                    className="min-h-[400px] font-mono text-sm resize-none border-0 focus-visible:ring-0 bg-muted/30"
-                  />
-                </div> */}
+                  </SyntaxHighlighter>                  
               </CardContent>
             </Card>
           </div>
