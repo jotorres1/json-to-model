@@ -10,7 +10,7 @@ import { Copy, Loader2, Moon, Sun, Zap } from "lucide-react"
 import { useTheme } from "next-themes"
 import { toast } from "@/hooks/use-toast"
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import { atomOneDark , atomOneLight } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
 
 type OutputFormat = "pydantic" | "typescript"
@@ -313,7 +313,7 @@ export default function JsonToModelConverter() {
                 <div className="relative">
                   <SyntaxHighlighter
                     language={outputFormat === "pydantic" ? "python" : "typescript"}
-                    style={theme === "dark" ? atomOneDark : github }
+                    style={theme === "dark" ? atomOneDark : atomOneLight }
                     showLineNumbers
                     wrapLongLines={true}                
                     customStyle={{
