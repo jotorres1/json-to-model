@@ -313,8 +313,9 @@ export default function JsonToModelConverter() {
                 <div className="relative">
                   <SyntaxHighlighter
                     language={outputFormat === "pydantic" ? "python" : "typescript"}
-                    style={theme === "dark" ? oneDark : oneLight }
-                    wrapLongLines={true}
+                    style={theme === "dark" ? atomOneDark : github }
+                    showLineNumbers
+                    wrapLongLines={true}                
                     customStyle={{
                       borderRadius: '0.5rem',
                       backgroundColor: 'transparent',
