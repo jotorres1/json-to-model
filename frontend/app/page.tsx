@@ -311,7 +311,6 @@ export default function JsonToModelConverter() {
               </CardHeader>
               <CardContent>
                 <div className="relative">
-                  { const { theme } = useTheme() }
                   <SyntaxHighlighter
                     language={outputFormat === "pydantic" ? "python" : "typescript"}
                     style={theme === "dark" ? oneDark : oneLight }
