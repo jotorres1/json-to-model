@@ -193,6 +193,23 @@ export default function JsonToModelConverter() {
     }
   }
 
+  const handleDownloadCode = () => {
+    if (!generatedCode) return;
+
+    const blob = new Blob([generatedCode], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    const extension = outputFormat === "pydantic" ? "py" : "ts";
+    link.href = url;
+    link.download = `model.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+
   return (
     <div className="min-h-screen bg-background transition-colors">
       {/* Header */}
@@ -297,15 +314,26 @@ export default function JsonToModelConverter() {
                 <CardTitle className="text-lg font-semibold flex items-center justify-between">
                   Generated Code
                   {generatedCode && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCopyToClipboard}
-                      className="flex items-center gap-2 bg-transparent"
-                    >
-                      <Copy className="h-4 w-4" />
-                      Copy
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCopyToClipboard}
+                        className="flex items-center gap-2 bg-transparent"
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDownloadCode}
+                        className="flex items-center gap-2 bg-transparent"
+                      >
+                        Download
+                      </Button>
+                    </div>
+
                   )}
                 </CardTitle>
               </CardHeader>
