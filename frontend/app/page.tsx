@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -31,6 +31,19 @@ export default function JsonToModelConverter() {
   const [isLoading, setIsLoading] = useState(false)
   const [isDownloadOpen, setIsDownloadOpen] = useState(false)
   const [filename, setFilename] = useState("model")
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toLowerCase().includes("mac")
+      if ((isMac && e.metaKey && e.key.toLowerCase() === "b") || (!isMac && e.ctrlKey && e.key.toLowerCase() === "b")) {
+        e.preventDefault()
+        handleBeautify()
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [jsonInput])
+
 
   const generatePydanticModel = (obj: JsonValue, className = "Model"): string => {
     const getType = (value: any): string => {
@@ -217,6 +230,36 @@ export default function JsonToModelConverter() {
     URL.revokeObjectURL(url)
   }
 
+  const handleBeautify = () => {
+    setError("")
+
+    const raw = jsonInput.trim()
+    if (!raw) {
+      setError("Please paste some JSON to beautify")
+      return
+    }
+
+    try {
+      // Optional light sanitization (helps when pasting from rich text)
+      const sanitized = raw
+        .replace(/[“”]/g, '"')
+        .replace(/[‘’]/g, "'")
+
+      const parsed = JSON.parse(sanitized)
+      const pretty = JSON.stringify(parsed, null, 2)
+      setJsonInput(pretty)
+
+      toast({
+        title: "Beautified",
+        description: "Your JSON has been formatted.",
+      })
+    } catch (e) {
+      console.error("Beautify error:", e)
+      setError("Invalid JSON. Please fix errors and try again.")
+    }
+  }
+
+
 
   return (
     <div className="min-h-screen bg-background transition-colors">
@@ -262,24 +305,38 @@ export default function JsonToModelConverter() {
                 </SelectContent>
               </Select>
             </div>
+
             <div className="flex flex-col gap-2">
               <Label className="text-sm font-medium opacity-0">Action</Label>
-              <Button
-                onClick={handleConvert}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Converting...
-                  </>
-                ) : (
-                  "Convert"
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleBeautify}
+                  variant="secondary"
+                  className="px-6"
+                  disabled={isLoading}
+                  title="Format the JSON input"
+                >
+                  Beautify JSON
+                </Button>
+
+                <Button
+                  onClick={handleConvert}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Converting...
+                    </>
+                  ) : (
+                    "Convert"
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
+
 
           {/* Error Message */}
           {error && (
