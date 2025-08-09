@@ -322,7 +322,7 @@ export default function JsonToModelConverter() {
                 <CardTitle className="text-lg font-semibold flex items-center justify-between">
                   Generated Code
                   {generatedCode && (
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -332,15 +332,17 @@ export default function JsonToModelConverter() {
                         <Copy className="h-4 w-4" />
                         Copy
                       </Button>
+
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleDownloadCode}
+                        onClick={() => setIsDownloadOpen(true)}
                         className="flex items-center gap-2 bg-transparent"
                       >
                         Download
                       </Button>
                     </div>
+
 
                   )}
                 </CardTitle>
@@ -368,6 +370,41 @@ export default function JsonToModelConverter() {
               </CardContent>
             </Card>
           </div>
+          <Dialog open={isDownloadOpen} onOpenChange={setIsDownloadOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Name your file</DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-2">
+                <Label htmlFor="filename">Filename</Label>
+                <Input
+                  id="filename"
+                  value={filename}
+                  onChange={(e) => setFilename(e.target.value)}
+                  placeholder="model"
+                />
+                <p className="text-sm text-muted-foreground">
+                  The file will be saved as <code>{filename || "model"}.{outputFormat === "pydantic" ? "py" : "ts"}</code>
+                </p>
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={() => setIsDownloadOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    handleDownloadCode(filename)
+                    setIsDownloadOpen(false)
+                  }}
+                >
+                  Download
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
 
           {/* Footer */}
           <div className="text-center mt-16 text-muted-foreground">
