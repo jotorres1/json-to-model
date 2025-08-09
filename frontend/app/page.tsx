@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Copy, Loader2, Moon, Sun, Zap } from "lucide-react"
 import { useTheme } from "next-themes"
 import { toast } from "@/hooks/use-toast"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { atomOneDark , atomOneLight, a11yLight, a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
@@ -25,7 +28,9 @@ export default function JsonToModelConverter() {
   const [generatedCode, setGeneratedCode] = useState("")
   const [error, setError] = useState("")
   const { theme, setTheme } = useTheme()
-   const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isDownloadOpen, setIsDownloadOpen] = useState(false)
+  const [filename, setFilename] = useState("model")
 
   const generatePydanticModel = (obj: JsonValue, className = "Model"): string => {
     const getType = (value: any): string => {
@@ -193,20 +198,23 @@ export default function JsonToModelConverter() {
     }
   }
 
-  const handleDownloadCode = () => {
-    if (!generatedCode) return;
+  const handleDownloadCode = (name?: string) => {
+    if (!generatedCode) return
 
-    const blob = new Blob([generatedCode], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const base = (name ?? filename)?.trim() || "model"
+    const ext = outputFormat === "pydantic" ? "py" : "ts"
+    // Ensure we don’t double-append the extension
+    const finalName = base.toLowerCase().endsWith(`.${ext}`) ? base : `${base}.${ext}`
 
-    const extension = outputFormat === "pydantic" ? "py" : "ts";
-    link.href = url;
-    link.download = `model.${extension}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const blob = new Blob([generatedCode], { type: "text/plain;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = finalName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
 
