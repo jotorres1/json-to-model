@@ -12,6 +12,8 @@ import { toast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 
+import JSON5 from "json5"
+
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { atomOneDark , atomOneLight, a11yLight, a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
@@ -137,29 +139,40 @@ export default function JsonToModelConverter() {
   }
 
   const handleConvert = async () => {
-  setError("")
-  setGeneratedCode("")
+    setError("");
+    setGeneratedCode("");
 
-  if (!jsonInput.trim()) {
-    setError("Please enter some JSON to convert")
-    return
-  }
+    if (!jsonInput.trim()) {
+      setError("Please enter some JSON to convert");
+      return;
+    }
 
-  try {
-    const parsedJson = JSON.parse(jsonInput)
+    let parsedJson;
+    try {
+      // Try strict JSON parse first
+      parsedJson = JSON.parse(jsonInput);
+    } catch {
+      try {
+        // Fallback: lenient parsing with JSON5
+        parsedJson = JSON5.parse(jsonInput);
+      } catch (err) {
+        console.error("Parsing error:", err);
+        setError("Invalid JSON format. Please beautify or fix your input.");
+        return;
+      }
+    }
 
     if (typeof parsedJson !== "object" || parsedJson === null) {
-      setError("JSON must be an object")
-      return
+      setError("JSON must be an object");
+      return;
     }
 
     // Set loading state to true
-    setIsLoading(true)
+    setIsLoading(true);
 
     // Simulate async operation with a delay
     setTimeout(async () => {
       try {
-        // This is where the actual conversion happens
         // Send parsed JSON and output format to the backend
         const response = await fetch("https://json-to-model.onrender.com/convert", {
           method: "POST",
@@ -170,28 +183,24 @@ export default function JsonToModelConverter() {
             json: parsedJson,
             target: outputFormat, // 'pydantic' or 'typescript'
           }),
-        })
+        });
 
-        const data = await response.json()
+        const data = await response.json();
 
         if (response.ok && data.generatedCode) {
-          setGeneratedCode(data.generatedCode)
+          setGeneratedCode(data.generatedCode);
         } else {
-          setError(data.error || "Backend did not return valid output")
+          setError(data.error || "Backend did not return valid output");
         }
       } catch (err) {
-          setError("Error generating model. Please check your input.")
-        } finally {
-          // Reset loading state
-          setIsLoading(false)
-        }
-      }, 3000) // 3 second delay
+        setError("Error generating model. Please check your input.");
+      } finally {
+        // Reset loading state
+        setIsLoading(false);
+      }
+    }, 3000); // 3 second delay
+  };
 
-  } catch (err) {
-    console.error("Conversion error:", err)
-    setError("Invalid JSON format or backend error.")
-  }
-}
 
   const handleCopyToClipboard = async () => {
     if (!generatedCode) return
@@ -231,33 +240,57 @@ export default function JsonToModelConverter() {
   }
 
   const handleBeautify = () => {
-    setError("")
+    setError("");
 
-    const raw = jsonInput.trim()
+    const raw = jsonInput.trim();
     if (!raw) {
-      setError("Please paste some JSON to beautify")
-      return
+      setError("Please paste some JSON to beautify");
+      return;
     }
 
+    // Normalize quotes/line endings (nice when pasting from docs)
+    const sanitized = raw
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/\r\n?/g, "\n");
+
+    // Try strict JSON first, then lenient JSON5
+    let parsed: any;
     try {
-      // Optional light sanitization (helps when pasting from rich text)
-      const sanitized = raw
-        .replace(/[“”]/g, '"')
-        .replace(/[‘’]/g, "'")
-
-      const parsed = JSON.parse(sanitized)
-      const pretty = JSON.stringify(parsed, null, 2)
-      setJsonInput(pretty)
-
-      toast({
-        title: "Beautified",
-        description: "Your JSON has been formatted.",
-      })
-    } catch (e) {
-      console.error("Beautify error:", e)
-      setError("Invalid JSON. Please fix errors and try again.")
+      parsed = JSON.parse(sanitized);
+    } catch {
+      try {
+        parsed = JSON5.parse(sanitized);
+      } catch (e) {
+        console.error("Beautify error:", e);
+        setError("Invalid JSON. Please fix errors and try again.");
+        return;
+      }
     }
-  }
+
+    const pretty = JSON.stringify(parsed, null, 2);
+
+    // Early exit if already pretty (avoids re-renders/flicker)
+    if (pretty === jsonInput) {
+      toast({ title: "Already formatted", description: "Your JSON is already beautified." });
+      return;
+    }
+
+    // (Optional) preserve caret position in the Textarea
+    // const selStart = inputRef.current?.selectionStart ?? null;
+    // const selEnd = inputRef.current?.selectionEnd ?? null;
+
+    setJsonInput(pretty);
+    toast({ title: "Beautified", description: "Your JSON has been formatted." });
+
+    // if (inputRef.current && selStart !== null && selEnd !== null) {
+    //   requestAnimationFrame(() => {
+    //     inputRef.current!.selectionStart = selStart;
+    //     inputRef.current!.selectionEnd = selEnd;
+    //   });
+    // }
+  };
+
 
 
 
