@@ -7,6 +7,10 @@ yarn-error.log*
 # Next.js
 .next/
 out/
+.cache/
+
+# Env files
+.env
 .env.local
 .env.development.local
 .env.test.local
@@ -23,7 +27,28 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+*.iml
+.history/
 
-
-# Virtual Environment
+# Python
 venv/
+**/__pycache__/
+*.py[cod]
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing
+.cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Databases
+*.sqlite3
+*.db
+
+# Cache files
+*.cache
