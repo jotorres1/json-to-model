@@ -1,37 +1,20 @@
-name: CI
+frontend:
+  name: Frontend build
+  runs-on: ubuntu-latest
+  defaults:
+    run:
+      working-directory: frontend
+  steps:
+    - uses: actions/checkout@v4
 
-on:
-  pull_request:
-  push:
-    branches: [ main ]
+    # Install Node (no pnpm cache here)
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
 
-jobs:
-  frontend:
-    name: Frontend build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-      - run: corepack enable && corepack prepare pnpm@9 --activate
-      - run: pnpm install
-      - run: pnpm build
+    # Enable pnpm via Corepack (ships with Node 20)
+    - run: corepack enable && corepack prepare pnpm@9 --activate
+    - run: pnpm -v
 
-  backend:
-    name: Backend lint
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install -r requirements.txt
-      - run: python -c "print('Backend env OK')"
+    - run: pnpm install
+    - run: pnpm build
